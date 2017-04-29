@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/apps_recycler">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <!--
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right|center_vertical"
+        android:layout_marginTop="13dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp">
+
+        <ImageButton
+            android:layout_width="@dimen/height_uri_input"
+            android:layout_height="@dimen/height_uri_input"
+            app:srcCompat="@drawable/setting"
+            android:id="@+id/but_open_settings"
+            android:layout_marginRight="10dp"
+            android:background="?android:background"/>
+    </TableRow>
+
+    -->
+
+</LinearLayout>
