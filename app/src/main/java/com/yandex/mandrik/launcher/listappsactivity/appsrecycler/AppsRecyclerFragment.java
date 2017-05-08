@@ -9,7 +9,6 @@ import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -80,7 +79,7 @@ public class AppsRecyclerFragment extends Fragment {
                             Intent intent = context.getPackageManager().getLaunchIntentForPackage(
                                     appAdapter.getAppInfoById(position).
                                             getPackageName().toString());
-                            appManager.decrimentClicksInAppsList(appAdapter.getIndexInArray(position));
+                            appManager.incrementClicksInAppsList(appAdapter.getIndexInArray(position));
 
                             context.startActivity(intent);
                         }

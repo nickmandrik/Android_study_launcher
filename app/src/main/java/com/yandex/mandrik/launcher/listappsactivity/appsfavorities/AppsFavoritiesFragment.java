@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -124,7 +125,7 @@ public class AppsFavoritiesFragment extends Fragment {
 
         favoritesRecycler = (RecyclerView) rootView.findViewById(R.id.favoritesRecyclerView);
 
-        listAdapter = new FavoritesListAdapter();
+        listAdapter = new FavoritesListAdapter(context);
         listAdapter.setHeader(getString(R.string.favorites));
         favoritesRecycler.setAdapter(listAdapter);
         favoritesRecycler.setHasFixedSize(true);
@@ -174,8 +175,7 @@ public class AppsFavoritiesFragment extends Fragment {
                             .setIcon(listAdapter.getAppInfoById(position).getIcon())
                             .setPositiveButton(context.getString(R.string.delete), new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
-                                    listAdapter.favoriteAppsList.remove(position - 1);
-                                    listAdapter.notifyItemRemoved(position);
+                                    listAdapter.removeFavorite(position);
                                     dialog.dismiss();
                                 }
                             })
@@ -274,24 +274,20 @@ public class AppsFavoritiesFragment extends Fragment {
 
     @Subscribe
     public void onFavoritesRecyclerChangedEvent(FavoritesRecyclerChangedEvent event) {
+        Log.d("tg", event.appInfo.getPackageName());
         if(event.isInstall) {
-            if(!listAdapter.favoriteAppsList.contains(event.appInfo)) {
-                listAdapter.favoriteAppsList.add(event.appInfo);
-                favoritesRecycler.getAdapter().notifyItemInserted(listAdapter.favoriteAppsList.size());
-            }
+            listAdapter.addFavorite(event.appInfo);
         } else {
             if(listAdapter.favoriteAppsList.contains(event.appInfo)) {
                 int pos = listAdapter.favoriteAppsList.indexOf(event.appInfo);
-                listAdapter.favoriteAppsList.remove(event.appInfo);
-                favoritesRecycler.getAdapter().notifyItemRemoved(pos + 1);
+                listAdapter.removeFavorite(pos);
             }
         }
     }
 
     @Subscribe
     public void onClearFavoritesEvent(ClearFavoritesEvent event) {
-        listAdapter.favoriteAppsList = new ArrayList();
-        favoritesRecycler.getAdapter().notifyDataSetChanged();
+        listAdapter.clearFavorites();
     }
 
 

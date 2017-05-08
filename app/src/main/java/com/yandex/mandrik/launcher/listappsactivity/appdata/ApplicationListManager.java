@@ -157,7 +157,7 @@ public class ApplicationListManager {
         }
     }
 
-    public void decrimentClicksInAppsList(int postionOfItem) {
+    public void incrementClicksInAppsList(int postionOfItem) {
         appsList.get(postionOfItem).setCountClicks(appsList.get(postionOfItem).getCountClicks()+1);
 
         SharedPreferences appSettings =
