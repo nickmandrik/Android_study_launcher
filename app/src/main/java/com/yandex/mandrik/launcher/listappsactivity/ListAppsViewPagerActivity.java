@@ -1,13 +1,19 @@
 package com.yandex.mandrik.launcher.listappsactivity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.listappsactivity.pageadapter.AppsRecyclerScreenSlidePagerAdapter;
 
 import com.yandex.mandrik.launcher.R;
@@ -23,12 +29,13 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.*;
 
 public class ListAppsViewPagerActivity extends AppCompatActivity {
 
-    AppCompatActivity appCompatActivity = new AppCompatActivity();
-
+    private ApplicationListManager appManager;
 
     @Override
     protected void onPause() {
@@ -44,6 +51,23 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         EventBus.getDefault().register(this);
+
+
+
+
+
+
+
+
+
+
+
+
+        /*int countInRow = getCountCeilsInRowLandscape(ListAppsViewPagerActivity.this);
+        if (ListAppsViewPagerActivity.this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            countInRow = getCountCeilsInRowPortrait(ListAppsViewPagerActivity.this);
+        }
+        appManager = new ApplicationListManager(ListAppsViewPagerActivity.this, countInRow);*/
 
         setTheme(SharedPreferencesHelper.getIdResTheme(ListAppsViewPagerActivity.this));
         setContentView(R.layout.activity_recycler);
@@ -62,7 +86,8 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         headers[1] = getString(R.string.favorite_apps);
         pagerAdapter = new AppsRecyclerScreenSlidePagerAdapter
                 (getSupportFragmentManager(), 2,
-                        SharedPreferencesHelper.isHiddenFavorites(ListAppsViewPagerActivity.this), headers);
+                        SharedPreferencesHelper.isHiddenFavorites(ListAppsViewPagerActivity.this),
+                        headers, appManager);
         pager.setAdapter(pagerAdapter);
 
         UpdateApplicationReceiver receiver = new UpdateApplicationReceiver();

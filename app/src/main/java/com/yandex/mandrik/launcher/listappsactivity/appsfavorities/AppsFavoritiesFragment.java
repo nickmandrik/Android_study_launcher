@@ -1,18 +1,28 @@
 package com.yandex.mandrik.launcher.listappsactivity.appsfavorities;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,14 +37,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter.CustomFavoritiesTouchListener;
+import com.yandex.mandrik.launcher.listappsactivity.appdata.ContactsHelper;
+import com.yandex.mandrik.launcher.util.clicker.CustomRecyclerTouchListener;
 import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter.FavoritesListAdapter;
 import com.yandex.mandrik.launcher.settingsactivity.SettingsActivity;
 import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
+import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountMemUriEvent;
+import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ClearFavoritesEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ClearHistoryUriEvent;
 import com.yandex.mandrik.launcher.util.eventbus.FavoritesRecyclerChangedEvent;
+import com.yandex.mandrik.launcher.util.eventbus.SetFavoritesEvent;
 import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
 import com.yandex.mandrik.launcher.util.layout.RecyclerSpanSizeLookup;
 
@@ -43,9 +57,8 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 
-/**
- * Created by Home on 27.04.2017.
- */
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
 
 public class AppsFavoritiesFragment extends Fragment {
     private Context context;
@@ -95,6 +108,7 @@ public class AppsFavoritiesFragment extends Fragment {
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
 
+                    //!!!!!!!
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(editUri.getText())));
 
 
@@ -125,9 +139,11 @@ public class AppsFavoritiesFragment extends Fragment {
 
         favoritesRecycler = (RecyclerView) rootView.findViewById(R.id.favoritesRecyclerView);
 
+
+
         listAdapter = new FavoritesListAdapter(context);
-        listAdapter.setHeader(getString(R.string.favorites));
-        favoritesRecycler.setAdapter(listAdapter);
+        listAdapter.setHeaders(new String[] {getString(R.string.contacts), getString(R.string.favorites)});
+
         favoritesRecycler.setHasFixedSize(true);
 
 
@@ -148,12 +164,11 @@ public class AppsFavoritiesFragment extends Fragment {
             }
         });*/
 
-        favoritesRecycler.addOnItemTouchListener(new CustomFavoritiesTouchListener(context, favoritesRecycler,
+        favoritesRecycler.addOnItemTouchListener(new CustomRecyclerTouchListener(context, favoritesRecycler,
                 new RecyclerViewItemClickListener() {
             @Override
             public void onClick(View view, int position) {
                 if (listAdapter.getAppInfoById(position) != null) {
-                            /*remCountClicks(position);*/
                     Intent intent = context.getPackageManager().getLaunchIntentForPackage(
                             listAdapter.getAppInfoById(position).
                                     getPackageName().toString());
@@ -161,6 +176,10 @@ public class AppsFavoritiesFragment extends Fragment {
                             listAdapter.getAppInfoById(position)
                                     .getCountClicks() + 1
                     );
+                    context.startActivity(intent);
+                } else if (listAdapter.getContactInfoById(position) != null) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" +
+                            listAdapter.getContactInfoById(position).number));
                     context.startActivity(intent);
                 }
             }
@@ -186,13 +205,80 @@ public class AppsFavoritiesFragment extends Fragment {
                             })
                             .create()
                             .show();
+                } else if (listAdapter.getContactInfoById(position) != null) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
+                            listAdapter.getContactInfoById(position).id);
+                    intent.setData(uri);
+                    context.startActivity(intent);
                 }
             }
         }));
 
+        favoritesRecycler.setAdapter(listAdapter);
         setLayoutManagerOnRecycler();
 
+
+
+
+
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(context.getString(R.string.contacts_access_needed));
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.setMessage(context.getString(R.string.please_confirm_contacts_access));//TODO put real question
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @TargetApi(Build.VERSION_CODES.M)
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(
+                                new String[]
+                                        {Manifest.permission.READ_CONTACTS}
+                                , 1);
+                    }
+                });
+                builder.show();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);
+            }
+        } else {
+            int countInRow = getCountCeilsInRowLandscape(context);
+            if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                countInRow = getCountCeilsInRowPortrait(context);
+            }
+            listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
+        }
+
+
         return rootView;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    int countInRow = getCountCeilsInRowLandscape(context);
+                    if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        countInRow = getCountCeilsInRowPortrait(context);
+                    }
+                    listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
+                    listAdapter.notifyDataSetChanged();
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
     }
 
     public void setSpinner() {
@@ -241,7 +327,6 @@ public class AppsFavoritiesFragment extends Fragment {
 
 
 
-
     public void hideSoftKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -255,9 +340,9 @@ public class AppsFavoritiesFragment extends Fragment {
 
     private void setLayoutManagerOnRecycler() {
 
-        int countInRow = SharedPreferencesHelper.getCountCeilsInRowLandscape(context);
+        int countInRow = getCountCeilsInRowLandscape(context);
         if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            countInRow = SharedPreferencesHelper.getCountCeilsInRowPortrait(context);
+            countInRow = getCountCeilsInRowPortrait(context);
         }
 
         GridLayoutManager layoutManager = new GridLayoutManager(context, countInRow, GridLayoutManager.VERTICAL, false);
@@ -272,18 +357,24 @@ public class AppsFavoritiesFragment extends Fragment {
     }
 
 
+
+
+
+
+
+
     @Subscribe
     public void onFavoritesRecyclerChangedEvent(FavoritesRecyclerChangedEvent event) {
-        Log.d("tg", event.appInfo.getPackageName());
         if(event.isInstall) {
             listAdapter.addFavorite(event.appInfo);
         } else {
             if(listAdapter.favoriteAppsList.contains(event.appInfo)) {
                 int pos = listAdapter.favoriteAppsList.indexOf(event.appInfo);
-                listAdapter.removeFavorite(pos);
+                listAdapter.removeFavorite(pos + listAdapter.contactsList.size() + 2);
             }
         }
     }
+
 
     @Subscribe
     public void onClearFavoritesEvent(ClearFavoritesEvent event) {
@@ -302,5 +393,37 @@ public class AppsFavoritiesFragment extends Fragment {
 
         SharedPreferencesHelper.changeCountVisibleUris(context, event.countMemUri);
         setSpinner();
+    }
+
+
+    @Subscribe
+    public void onSetFavoritesEvent(SetFavoritesEvent event) {
+        listAdapter.favoriteAppsList = new ArrayList();
+        listAdapter.favoriteAppsList = event.favoritesAppsList;
+    }
+
+
+    @Subscribe
+    public void onChangeCountCeilsEvent(ChangeCountCeilsEvent event) {
+        setLayoutManagerOnRecycler();
+        listAdapter.notifyDataSetChanged();
+    }
+
+
+    @Subscribe
+    public void onChangePackageEvent(ChangePackageEvent event) {
+
+        if(event.action.equals(Intent.ACTION_PACKAGE_REMOVED)) {
+            for(int i = 0; i < listAdapter.favoriteAppsList.size(); i++) {
+                if(listAdapter.favoriteAppsList.get(i).second.getPackageName().equals(event.namePackage)) {
+                    listAdapter.removeFavorite(i + listAdapter.contactsList.size() + 2);
+                }
+            }
+        }
+
+
+        if(event.action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+            listAdapter.addFavorite(event.appInfo);
+        }
     }
 }

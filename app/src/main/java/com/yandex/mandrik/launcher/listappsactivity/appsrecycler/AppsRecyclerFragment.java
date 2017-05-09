@@ -2,11 +2,13 @@ package com.yandex.mandrik.launcher.listappsactivity.appsrecycler;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -17,23 +19,28 @@ import android.view.ViewGroup;
 
 import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
-import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter.CustomFavoritiesTouchListener;
+import com.yandex.mandrik.launcher.util.clicker.CustomRecyclerTouchListener;
 import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
-import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.recycler.adapter.ApplicationListAdapter;
+import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.adapter.ApplicationListAdapter;
 import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
 import com.yandex.mandrik.launcher.util.eventbus.FavoritesRecyclerChangedEvent;
+import com.yandex.mandrik.launcher.util.eventbus.SetFavoritesEvent;
 import com.yandex.mandrik.launcher.util.layout.RecyclerSpanSizeLookup;
 import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
+import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
+import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
 /**
  * Created by Home on 27.04.2017.
@@ -71,7 +78,7 @@ public class AppsRecyclerFragment extends Fragment {
 
         appRecycler.setHasFixedSize(true);
 
-        appRecycler.addOnItemTouchListener(new CustomFavoritiesTouchListener(context, appRecycler,
+        appRecycler.addOnItemTouchListener(new CustomRecyclerTouchListener(context, appRecycler,
                 new RecyclerViewItemClickListener() {
                     @Override
                     public void onClick(View view, int position) {
@@ -88,7 +95,6 @@ public class AppsRecyclerFragment extends Fragment {
                     @Override
                     public void onLongClick(View view, final int position) {
                         if (appAdapter.getAppInfoById(position) != null) {
-                            /*remCountClicks(position);*/
                             view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                                 @Override
                                 public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -151,6 +157,29 @@ public class AppsRecyclerFragment extends Fragment {
         setLayoutManagerOnRecycler();
 
 
+        SharedPreferences favoritesSettings =
+                context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
+
+        Integer countFavorites = favoritesSettings.getInt(COUNT_FAVORITES, 0);
+        ArrayList<Pair<Integer, AppInfo>> favoritesAppsList = new ArrayList();
+        HashMap<String, AppInfo> namePackageFavorites = new HashMap();
+        for(AppInfo appInfo: appManager.getAppsList()) {
+            namePackageFavorites.put(appInfo.getPackageName(), appInfo);
+        }
+
+        for(int i = 0; i < countFavorites; i++) {
+            String packageNameApp = favoritesSettings.getString(String.valueOf(i), "none");
+            if(!packageNameApp.equals("none")) {
+                if(namePackageFavorites.keySet().contains(packageNameApp)) {
+                    favoritesAppsList.add(new Pair(i, namePackageFavorites.get(packageNameApp)));
+                }
+            }
+        }
+        EventBus bus = EventBus.getDefault();
+        bus.post(new SetFavoritesEvent(favoritesAppsList));
+
+
+
         return rootView;
     }
 
@@ -186,13 +215,14 @@ public class AppsRecyclerFragment extends Fragment {
     @Subscribe
     public void onChangeCountCeilsEvent(ChangeCountCeilsEvent event) {
 
-        int countInRow = getCountInRow();;
+        int countInRow = getCountInRow();
         appManager.updateNewApps(countInRow);
         appManager.updatePopularApps(countInRow);
 
         setLayoutManagerOnRecycler();
         appRecycler.getAdapter().notifyDataSetChanged();
     }
+
 
     @Subscribe
     public void onChangePackageEvent(ChangePackageEvent event) {
@@ -213,7 +243,7 @@ public class AppsRecyclerFragment extends Fragment {
             appManager.addAppInAppsList(event.appInfo);
         }
 
-        if(event.action.equals(Intent.ACTION_PACKAGE_CHANGED)) {
+        /*if(event.action.equals(Intent.ACTION_PACKAGE_CHANGED)) {
             List<AppInfo> appInfoList = appManager.getAppsList();
             for(int i = 0; i < appInfoList.size(); i++) {
                 AppInfo appInfo = appInfoList.get(i);
@@ -224,7 +254,7 @@ public class AppsRecyclerFragment extends Fragment {
                     break;
                 }
             }
-        }
+        }*/
 
         int countInRow = getCountInRow();
         appManager.updateNewApps(countInRow);

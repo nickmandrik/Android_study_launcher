@@ -1,4 +1,4 @@
-package com.yandex.mandrik.launcher.listappsactivity.appsrecycler.recycler.adapter;
+package com.yandex.mandrik.launcher.listappsactivity.appsrecycler.adapter;
 
 import android.content.Context;
 import android.content.Intent;

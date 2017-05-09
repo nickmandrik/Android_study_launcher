@@ -1,4 +1,4 @@
-package com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter;
+package com.yandex.mandrik.launcher.util.clicker;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -6,21 +6,20 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.recycler.ApplicationsRecycler;
 import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
 
 /**
  * Created by Home on 27.04.2017.
  */
 
-public class CustomFavoritiesTouchListener implements RecyclerView.OnItemTouchListener {
+public class CustomRecyclerTouchListener implements RecyclerView.OnItemTouchListener {
 
     //GestureDetector to intercept touch events
     GestureDetector gestureDetector;
     private RecyclerViewItemClickListener clickListener;
 
-    public CustomFavoritiesTouchListener(Context context, final RecyclerView recyclerView,
-                                     final RecyclerViewItemClickListener clickListener) {
+    public CustomRecyclerTouchListener(Context context, final RecyclerView recyclerView,
+                                       final RecyclerViewItemClickListener clickListener) {
         this.clickListener = clickListener;
         gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
 

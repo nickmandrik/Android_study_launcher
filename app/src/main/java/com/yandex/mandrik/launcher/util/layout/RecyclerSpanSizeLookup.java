@@ -3,8 +3,6 @@ package com.yandex.mandrik.launcher.util.layout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.recycler.adapter.ApplicationListAdapter;
-
 /**
  * Created by Home on 03.04.2017.
  */

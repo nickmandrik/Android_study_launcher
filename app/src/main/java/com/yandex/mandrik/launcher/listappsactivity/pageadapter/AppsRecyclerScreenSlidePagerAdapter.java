@@ -1,14 +1,13 @@
 package com.yandex.mandrik.launcher.listappsactivity.pageadapter;
 
+import android.app.Application;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 
+import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.AppsFavoritiesFragment;
 import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.AppsRecyclerFragment;
-import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.recycler.ApplicationsRecycler;
 
 /**
  * A simple pager adapter that represents 5 ViewPageRecyclerFragment objects, in
@@ -18,14 +17,17 @@ public class AppsRecyclerScreenSlidePagerAdapter extends FragmentStatePagerAdapt
 
     int numPages;
     String[] headers;
+    ApplicationListManager applicationListManager;
 
-    public AppsRecyclerScreenSlidePagerAdapter(FragmentManager fm, int numPages, boolean isHiddenFavorites, String[] headers) {
+    public AppsRecyclerScreenSlidePagerAdapter(FragmentManager fm, int numPages, boolean isHiddenFavorites,
+                                               String[] headers, ApplicationListManager appManager) {
         super(fm);
         this.numPages = numPages;
         if(isHiddenFavorites) {
             this.numPages = numPages - 1;
         }
         this.headers = headers;
+        this.applicationListManager = appManager;
     }
 
 

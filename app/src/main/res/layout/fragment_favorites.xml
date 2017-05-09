@@ -38,7 +38,6 @@
                     android:minHeight="@dimen/height_uri_input"
                     android:clickable="true"
                     android:focusableInTouchMode="true">
-
                 </EditText>
 
 

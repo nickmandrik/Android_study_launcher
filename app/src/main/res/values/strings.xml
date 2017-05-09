@@ -47,4 +47,9 @@
     <string name="ok">"Ok"</string>
     <string name="confirm">"Confirm"</string>
     <string name="favorite_apps">Favorite applications</string>
+
+
+    <string name="contacts">Contacts</string>
+    <string name="contacts_access_needed">Contacts access needed</string>
+    <string name="please_confirm_contacts_access">Please confirm contacts access</string>
 </resources>
