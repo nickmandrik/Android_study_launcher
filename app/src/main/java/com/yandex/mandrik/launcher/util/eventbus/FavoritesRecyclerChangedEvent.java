@@ -1,6 +1,6 @@
 package com.yandex.mandrik.launcher.util.eventbus;
 
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
 
 /**
  * Created by Home on 27.04.2017.

@@ -35,9 +35,7 @@
                     android:background="@drawable/input_uri"
                     android:padding="10dp"
                     android:textColor="?colorAccent"
-                    android:minHeight="@dimen/height_uri_input"
-                    android:clickable="true"
-                    android:focusableInTouchMode="true">
+                    android:minHeight="@dimen/height_uri_input">
                 </EditText>
 
 

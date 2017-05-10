@@ -18,9 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
 import com.yandex.mandrik.launcher.util.clicker.CustomRecyclerTouchListener;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
+import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.adapter.ApplicationListAdapter;
 import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;

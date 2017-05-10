@@ -5,6 +5,7 @@
     <uses-permission
         android:name="android.permission.READ_CONTACTS" />
 
+    <!--
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
@@ -16,6 +17,22 @@
 
     <uses-permission
         android:name="android.permission.INTERNET" />
+    -->
+
+
+    <permission
+        android:name="com.yandex.mandrik.launcher.permission"
+        android:label="Allow content provider to work with intent history"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.yandex.mandrik.launcher.permission.WRITE"
+        android:label="Allow writing into intent history"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.yandex.mandrik.launcher.permission.READ_ALL"
+        android:label="Allow to read all elements of intent history"
+        android:protectionLevel="dangerous" />
+
 
     <application
         android:allowBackup="true"
@@ -48,6 +65,14 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
+
+
+        <provider
+            android:name=".contentprovider.UriContentProvider"
+            android:authorities="com.yandex.mandrik.launcher"
+            android:exported="true"
+            android:permission="@string/permission"
+            android:writePermission="@string/write_permission"/>
 
     </application>
 

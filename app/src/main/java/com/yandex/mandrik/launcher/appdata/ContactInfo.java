@@ -1,6 +1,5 @@
-package com.yandex.mandrik.launcher.listappsactivity.appdata;
+package com.yandex.mandrik.launcher.appdata;
 
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
 /**

@@ -1,4 +1,8 @@
 <resources>
+
+    <string name="permission">com.yandex.mandrik.launcher.permission</string>
+    <string name="write_permission">com.yandex.mandrik.launcher.permission.WRITE</string>
+
     <string name="app_name">Launcher</string>
     <string name="yandex_launcher">Yandex launcher</string>
     <string name="released_by">Released by Nick Mandrik</string>

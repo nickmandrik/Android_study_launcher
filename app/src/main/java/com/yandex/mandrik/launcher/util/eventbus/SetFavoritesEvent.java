@@ -2,7 +2,7 @@ package com.yandex.mandrik.launcher.util.eventbus;
 
 import android.support.v4.util.Pair;
 
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
 
 import java.util.ArrayList;
 

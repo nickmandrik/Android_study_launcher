@@ -5,19 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.util.Log;
 
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
 import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
-import com.yandex.mandrik.launcher.util.eventbus.HideFavoritesEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
-
-import static android.R.attr.data;
 
 /**
  * Created by Home on 27.04.2017.

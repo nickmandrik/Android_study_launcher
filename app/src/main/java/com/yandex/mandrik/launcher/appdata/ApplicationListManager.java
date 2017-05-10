@@ -1,12 +1,10 @@
-package com.yandex.mandrik.launcher.listappsactivity.appdata;
+package com.yandex.mandrik.launcher.appdata;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
 
 import java.io.File;
 import java.util.ArrayList;

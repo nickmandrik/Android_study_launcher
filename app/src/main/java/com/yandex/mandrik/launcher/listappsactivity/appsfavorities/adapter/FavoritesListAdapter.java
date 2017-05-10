@@ -1,9 +1,14 @@
-package com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter;
+package com.yandex.mandrik.launcher.listappsactivity.appsfavorities.adapter;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,14 +17,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.ContactInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.ContactInfo;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import static android.support.v4.content.res.ResourcesCompat.getDrawable;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
@@ -48,7 +52,65 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
             super(itemView);
             image = (ImageView) itemView.findViewById(R.id.image_id);
             text = (TextView) itemView.findViewById(R.id.text_id);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (getAppInfoById(position) != null) {
+                        Intent intent = context.getPackageManager().getLaunchIntentForPackage(
+                                getAppInfoById(position).
+                                        getPackageName());
+                        getAppInfoById(position).setCountClicks(
+                                getAppInfoById(position)
+                                        .getCountClicks() + 1
+                        );
+                        context.startActivity(intent);
+                    } else if (getContactInfoById(position) != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" +
+                                getContactInfoById(position).number));
+                        context.startActivity(intent);
+                    }
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    final int position = getAdapterPosition();
+                    if (getAppInfoById(position) != null) {
+                        new AlertDialog.Builder(context)
+                                .setTitle(context.getString(R.string.delete_favorite))
+                                .setMessage(context.getString(R.string.confirm_delete_favorite) +
+                                        getAppInfoById(position).getLabel() + "?")
+                                .setIcon(getAppInfoById(position).getIcon())
+                                .setPositiveButton(context.getString(R.string.delete), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        removeFavorite(position);
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setNegativeButton(context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .create()
+                                .show();
+                    } else if (getContactInfoById(position) != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
+                                getContactInfoById(position).id);
+                        intent.setData(uri);
+                        context.startActivity(intent);
+                    }
+                    return true;
+                }
+            });
+
         }
+
+
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
@@ -140,9 +202,9 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
         int id = getItemViewType(position);
         switch(id) {
             case 0:
-            case 2:
-                break;
             case 1:
+                break;
+            case 2:
                 SharedPreferences favoritesSettings =
                         context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
 
@@ -150,7 +212,7 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 e.putString(String.valueOf(favoriteAppsList.get(position- contactsList.size()-2).first), "none");
                 e.apply();
 
-                favoriteAppsList.remove(position- contactsList.size()-2);
+                favoriteAppsList.remove(position-contactsList.size()-2);
                 notifyItemRemoved(position);
                 break;
             default:
@@ -179,7 +241,7 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             favoriteAppsList.add(new Pair(countFavorites, appInfo));
 
-            notifyItemInserted(favoriteAppsList.size() + contactsList.size() + 1);
+            notifyItemInserted(favoriteAppsList.size() + contactsList.size() + 2);
         }
     }
 
@@ -232,8 +294,5 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void setHeaders(String[] headers) {
         this.headers = headers;
     }
-
-
-
 
 }

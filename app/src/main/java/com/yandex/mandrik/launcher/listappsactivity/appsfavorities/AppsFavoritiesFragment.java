@@ -3,22 +3,16 @@ package com.yandex.mandrik.launcher.listappsactivity.appsfavorities;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
@@ -37,11 +31,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.ContactsHelper;
-import com.yandex.mandrik.launcher.util.clicker.CustomRecyclerTouchListener;
-import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.recycler.adapter.FavoritesListAdapter;
+import com.yandex.mandrik.launcher.appdata.ContactsHelper;
+import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.adapter.FavoritesListAdapter;
 import com.yandex.mandrik.launcher.settingsactivity.SettingsActivity;
-import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountMemUriEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
@@ -89,18 +81,6 @@ public class AppsFavoritiesFragment extends Fragment {
 
         setSpinner();
 
-        editUri.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    hideSoftKeyboard(v);
-                    editUri.setCursorVisible(false);
-                } else {
-                    editUri.setCursorVisible(true);
-                }
-            }
-        });
-
         editUri.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -108,7 +88,6 @@ public class AppsFavoritiesFragment extends Fragment {
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
 
-                    //!!!!!!!
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(editUri.getText())));
 
 
@@ -139,8 +118,6 @@ public class AppsFavoritiesFragment extends Fragment {
 
         favoritesRecycler = (RecyclerView) rootView.findViewById(R.id.favoritesRecyclerView);
 
-
-
         listAdapter = new FavoritesListAdapter(context);
         listAdapter.setHeaders(new String[] {getString(R.string.contacts), getString(R.string.favorites)});
 
@@ -155,130 +132,12 @@ public class AppsFavoritiesFragment extends Fragment {
             }
         });
 
-
-        /*favoritesRecycler.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editUri.setCursorVisible(false);
-                hideSoftKeyboard(v);
-            }
-        });*/
-
-        favoritesRecycler.addOnItemTouchListener(new CustomRecyclerTouchListener(context, favoritesRecycler,
-                new RecyclerViewItemClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                if (listAdapter.getAppInfoById(position) != null) {
-                    Intent intent = context.getPackageManager().getLaunchIntentForPackage(
-                            listAdapter.getAppInfoById(position).
-                                    getPackageName().toString());
-                    listAdapter.getAppInfoById(position).setCountClicks(
-                            listAdapter.getAppInfoById(position)
-                                    .getCountClicks() + 1
-                    );
-                    context.startActivity(intent);
-                } else if (listAdapter.getContactInfoById(position) != null) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" +
-                            listAdapter.getContactInfoById(position).number));
-                    context.startActivity(intent);
-                }
-            }
-
-            @Override
-            public void onLongClick(View view, final int position) {
-                if (listAdapter.getAppInfoById(position) != null) {
-                    new AlertDialog.Builder(context)
-                            .setTitle(context.getString(R.string.delete_favorite))
-                            .setMessage(context.getString(R.string.confirm_delete_favorite) +
-                                    listAdapter.getAppInfoById(position).getLabel() + "?")
-                            .setIcon(listAdapter.getAppInfoById(position).getIcon())
-                            .setPositiveButton(context.getString(R.string.delete), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    listAdapter.removeFavorite(position);
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton(context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .create()
-                            .show();
-                } else if (listAdapter.getContactInfoById(position) != null) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
-                            listAdapter.getContactInfoById(position).id);
-                    intent.setData(uri);
-                    context.startActivity(intent);
-                }
-            }
-        }));
-
         favoritesRecycler.setAdapter(listAdapter);
         setLayoutManagerOnRecycler();
 
-
-
-
-
-        if (ContextCompat.checkSelfPermission(context,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(context.getString(R.string.contacts_access_needed));
-                builder.setPositiveButton(android.R.string.ok, null);
-                builder.setMessage(context.getString(R.string.please_confirm_contacts_access));//TODO put real question
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @TargetApi(Build.VERSION_CODES.M)
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        requestPermissions(
-                                new String[]
-                                        {Manifest.permission.READ_CONTACTS}
-                                , 1);
-                    }
-                });
-                builder.show();
-            } else {
-                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);
-            }
-        } else {
-            int countInRow = getCountCeilsInRowLandscape(context);
-            if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                countInRow = getCountCeilsInRowPortrait(context);
-            }
-            listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
-        }
-
+        updateContacts();
 
         return rootView;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    int countInRow = getCountCeilsInRowLandscape(context);
-                    if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                        countInRow = getCountCeilsInRowPortrait(context);
-                    }
-                    listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
-                    listAdapter.notifyDataSetChanged();
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-        }
     }
 
     public void setSpinner() {
@@ -358,6 +217,67 @@ public class AppsFavoritiesFragment extends Fragment {
 
 
 
+    public void updateContacts() {
+
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(context.getString(R.string.contacts_access_needed));
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setMessage(context.getString(R.string.please_confirm_contacts_access));
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @TargetApi(Build.VERSION_CODES.M)
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            requestPermissions(
+                                    new String[]
+                                            {Manifest.permission.READ_CONTACTS}
+                                    , 1);
+                        }
+                    });
+                    builder.show();
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);
+                }
+            }
+        } else {
+            int countInRow = getCountCeilsInRowLandscape(context);
+            if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                countInRow = getCountCeilsInRowPortrait(context);
+            }
+            listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    int countInRow = getCountCeilsInRowLandscape(context);
+                    if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        countInRow = getCountCeilsInRowPortrait(context);
+                    }
+                    listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
+                    listAdapter.notifyDataSetChanged();
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
+    }
+
+
 
 
 
@@ -367,10 +287,12 @@ public class AppsFavoritiesFragment extends Fragment {
     public void onFavoritesRecyclerChangedEvent(FavoritesRecyclerChangedEvent event) {
         if(event.isInstall) {
             listAdapter.addFavorite(event.appInfo);
+            listAdapter.notifyItemInserted(listAdapter.contactsList.size() + listAdapter.favoriteAppsList.size() + 2);
         } else {
             if(listAdapter.favoriteAppsList.contains(event.appInfo)) {
                 int pos = listAdapter.favoriteAppsList.indexOf(event.appInfo);
                 listAdapter.removeFavorite(pos + listAdapter.contactsList.size() + 2);
+                listAdapter.notifyItemRemoved(pos + listAdapter.contactsList.size() + 2);
             }
         }
     }
@@ -405,6 +327,7 @@ public class AppsFavoritiesFragment extends Fragment {
 
     @Subscribe
     public void onChangeCountCeilsEvent(ChangeCountCeilsEvent event) {
+        updateContacts();
         setLayoutManagerOnRecycler();
         listAdapter.notifyDataSetChanged();
     }
@@ -419,11 +342,6 @@ public class AppsFavoritiesFragment extends Fragment {
                     listAdapter.removeFavorite(i + listAdapter.contactsList.size() + 2);
                 }
             }
-        }
-
-
-        if(event.action.equals(Intent.ACTION_PACKAGE_ADDED)) {
-            listAdapter.addFavorite(event.appInfo);
         }
     }
 }

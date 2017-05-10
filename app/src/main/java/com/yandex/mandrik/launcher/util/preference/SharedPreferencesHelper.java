@@ -1,7 +1,9 @@
 package com.yandex.mandrik.launcher.util.preference;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import com.yandex.mandrik.launcher.R;
 
@@ -14,12 +16,15 @@ import static com.yandex.mandrik.launcher.util.preference.constants.LauncherCons
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.IS_HIDDEN_FAVORITES;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.THEME_OF_APPLICATION;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.URI_NUMBER;
+import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.URI_TIME_EXECUTION;
 
 /**
  * Class helper to work with shared preferences
  */
 
 public class SharedPreferencesHelper {
+
+    public static final int MILLIS_IN_DAY = 86400000;
 
     /**
      * get id resource of the theme saved in APP_PREFERENCE_RECYCLER_APPS_SETTINGS
@@ -194,17 +199,28 @@ public class SharedPreferencesHelper {
      * save in file new uri and increase counter saved in APP_PREFERENCE_MEMORABLE_URI
      * @param context to use SharedPreferences
      * @param uri new saved uri
+     * @return true if the uri is correct and it added at the preference other way uri isn't correct and return value is false
      */
-    public static void addUri(Context context, String uri) {
-        SharedPreferences appSettings =
-                context.getSharedPreferences(APP_PREFERENCE_MEMORABLE_URI, Context.MODE_PRIVATE);
+    public static boolean addUri(Context context, String uri) {
 
-        int countUri = appSettings.getInt(COUNT_URI_IN_SETTING, 0);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(uri)));
 
-        SharedPreferences.Editor e = appSettings.edit();
-        e.putString(URI_NUMBER + new Integer(countUri + 1).toString(), uri);
-        e.putInt(COUNT_URI_IN_SETTING, countUri+1);
-        e.apply();
+
+        if(intent.resolveActivity(context.getPackageManager()) != null) {
+
+            SharedPreferences appSettings =
+                    context.getSharedPreferences(APP_PREFERENCE_MEMORABLE_URI, Context.MODE_PRIVATE);
+
+            int countUri = appSettings.getInt(COUNT_URI_IN_SETTING, 0);
+
+            SharedPreferences.Editor e = appSettings.edit();
+            e.putString(URI_NUMBER + new Integer(countUri + 1).toString(), uri);
+            e.putLong(URI_TIME_EXECUTION + new Integer(countUri + 1).toString(), System.currentTimeMillis());
+            e.putInt(COUNT_URI_IN_SETTING, countUri + 1);
+            e.apply();
+            return true;
+        }
+        return false;
     }
 
 
@@ -263,9 +279,33 @@ public class SharedPreferencesHelper {
         SharedPreferences.Editor e = uriSettings.edit();
         for(int i = 1; i < countUri + 1; i++) {
             e.remove(URI_NUMBER + new Integer(countUri - i).toString());
+            e.remove(URI_TIME_EXECUTION + new Integer(countUri - i).toString());
         }
         e.putInt(COUNT_URI_IN_SETTING, 0);
         e.apply();
+    }
+
+    /**
+     * get last reverse URI's saved in file APP_PREFERENCE_MEMORABLE_URI
+     * @param context to use SharedPreferences
+     * @return Uri's executed in this day
+     */
+    public static String[] getLastDayUris(Context context) {
+        SharedPreferences uriSettings = context.getSharedPreferences
+                (APP_PREFERENCE_MEMORABLE_URI, Context.MODE_PRIVATE);
+
+        Integer countUri = uriSettings.getInt(COUNT_URI_IN_SETTING, 0);
+
+        String[] data = new String[countUri];
+
+        for(int i = 0; i < countUri; i++) {
+            if (System.currentTimeMillis() / MILLIS_IN_DAY ==
+                    uriSettings.getLong(URI_TIME_EXECUTION + new Integer(countUri - i).toString(), 0) / MILLIS_IN_DAY) {
+                data[i] = uriSettings.getString(URI_NUMBER + new Integer(countUri - i).toString(), "none");
+            }
+        }
+
+        return data;
     }
 
 

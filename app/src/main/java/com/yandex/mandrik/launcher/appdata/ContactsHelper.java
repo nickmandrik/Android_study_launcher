@@ -1,4 +1,4 @@
-package com.yandex.mandrik.launcher.listappsactivity.appdata;
+package com.yandex.mandrik.launcher.appdata;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -6,15 +6,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 public class ContactsHelper {
 
     public static ArrayList<ContactInfo> fetchContacts(Context context, int count) {
-
-        Log.d("th", "yeeeee");
 
         ArrayList<ContactInfo> contacts = new ArrayList();
 

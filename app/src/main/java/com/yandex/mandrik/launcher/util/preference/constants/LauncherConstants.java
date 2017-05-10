@@ -21,6 +21,7 @@ public class LauncherConstants {
     public static final String APP_PREFERENCE_MEMORABLE_URI = "memorable_uri_settings";
     public static final String COUNT_URI_IN_SETTING = "count_uri";
     public static final String URI_NUMBER = "uri_number";
+    public static final String URI_TIME_EXECUTION = "uri_time_execution";
 
 
     public static final String APP_PREFERENCE_FAVORITES_LIST = "favorites_list_settings";

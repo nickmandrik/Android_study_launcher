@@ -26,4 +26,8 @@
     <dimen name="width_uri_input">220dp</dimen>
     <dimen name="height_uri_input">40dp</dimen>
     <dimen name="height_row_uri">70dp</dimen>
+
+
+    <dimen name="merging_btn_setting_activity">10dp</dimen>
+
 </resources>

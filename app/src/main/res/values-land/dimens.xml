@@ -4,4 +4,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="width_button_next">300dp</dimen>
     <dimen name="size_image_on_view_pager">100dp</dimen>
+
+
+    <dimen name="width_uri_input">400dp</dimen>
+    <dimen name="merging_btn_setting_activity">5dp</dimen>
 </resources>

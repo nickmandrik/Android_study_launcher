@@ -10,10 +10,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.yandex.mandrik.launcher.listappsactivity.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
+import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.settingsactivity.SettingsActivity;
 
 /**

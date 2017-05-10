@@ -1,11 +1,10 @@
 package com.yandex.mandrik.launcher.listappsactivity.pageadapter;
 
-import android.app.Application;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.yandex.mandrik.launcher.listappsactivity.appdata.ApplicationListManager;
+import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.AppsFavoritiesFragment;
 import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.AppsRecyclerFragment;
 
