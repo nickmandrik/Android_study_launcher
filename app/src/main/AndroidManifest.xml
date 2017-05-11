@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yandex.mandrik.launcher">
 
+    <uses-sdk android:minSdkVersion="16" />
     <uses-permission
         android:name="android.permission.READ_CONTACTS" />
 
@@ -20,15 +21,15 @@
     -->
 
 
-    <permission
+    <uses-permission
         android:name="com.yandex.mandrik.launcher.permission"
         android:label="Allow content provider to work with intent history"
         android:protectionLevel="dangerous" />
-    <permission
+    <uses-permission
         android:name="com.yandex.mandrik.launcher.permission.WRITE"
         android:label="Allow writing into intent history"
         android:protectionLevel="dangerous" />
-    <permission
+    <uses-permission
         android:name="com.yandex.mandrik.launcher.permission.READ_ALL"
         android:label="Allow to read all elements of intent history"
         android:protectionLevel="dangerous" />

@@ -7,6 +7,8 @@ import android.net.Uri;
 
 import com.yandex.mandrik.launcher.R;
 
+import java.util.ArrayList;
+
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_MEMORABLE_URI;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_RECYCLER_APPS_SETTINGS;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_ELEMENTS_IN_ROW_LANDSCAPE;
@@ -190,6 +192,34 @@ public class SharedPreferencesHelper {
 
         for(int i = 0; i < countUri; i++) {
             data[i] = uriSettings.getString(URI_NUMBER + new Integer(countUri - i).toString(), "none");
+        }
+
+        return data;
+    }
+
+
+
+    /**
+     * get reverse visible URI's saved in file APP_PREFERENCE_MEMORABLE_URI
+     * @param context to use SharedPreferences
+     * @param count of the visible uris
+     * @return latest Uri's
+     */
+    public static ArrayList<String> getVisibleUris(Context context, int count) {
+        SharedPreferences uriSettings = context.getSharedPreferences
+                (APP_PREFERENCE_MEMORABLE_URI, Context.MODE_PRIVATE);
+
+        Integer countUri = uriSettings.getInt(COUNT_URI_IN_SETTING, 0);
+
+        ArrayList<String> data = new ArrayList();
+
+        for(int i = 0; i < countUri; i++) {
+            if(!data.contains(uriSettings.getString(URI_NUMBER + new Integer(countUri - i).toString(), "none"))) {
+                data.add(uriSettings.getString(URI_NUMBER + new Integer(countUri - i).toString(), "none"));
+            }
+            if(data.size() == count) {
+                break;
+            }
         }
 
         return data;

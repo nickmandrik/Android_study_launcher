@@ -157,7 +157,7 @@ public class AppsRecyclerFragment extends Fragment {
         setLayoutManagerOnRecycler();
 
 
-        SharedPreferences favoritesSettings =
+        /*SharedPreferences favoritesSettings =
                 context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
 
         Integer countFavorites = favoritesSettings.getInt(COUNT_FAVORITES, 0);
@@ -176,14 +176,14 @@ public class AppsRecyclerFragment extends Fragment {
             }
         }
         EventBus bus = EventBus.getDefault();
-        bus.post(new SetFavoritesEvent(favoritesAppsList));
+        bus.post(new SetFavoritesEvent(favoritesAppsList));*/
 
 
 
         return rootView;
     }
 
-    @Override
+    /*@Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setLayoutManagerOnRecycler();
@@ -192,7 +192,7 @@ public class AppsRecyclerFragment extends Fragment {
         appManager.updateNewApps(countInRow);
         appManager.updatePopularApps(countInRow);
         appRecycler.getAdapter().notifyDataSetChanged();
-    }
+    }*/
 
     private void setLayoutManagerOnRecycler() {
         int countInRow = getCountInRow();

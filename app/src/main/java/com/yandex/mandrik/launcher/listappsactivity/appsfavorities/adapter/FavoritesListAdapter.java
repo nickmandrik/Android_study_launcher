@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -18,12 +19,16 @@ import android.widget.TextView;
 
 import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.appdata.ContactInfo;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
 import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
@@ -42,6 +47,29 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     public FavoritesListAdapter(Context context) {
         this.context = context;
+        SharedPreferences favoritesSettings =
+                context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
+
+        Integer countFavorites = favoritesSettings.getInt(COUNT_FAVORITES, 0);
+        favoriteAppsList = new ArrayList();
+        HashMap<String, AppInfo> namePackageFavorites = new HashMap();
+        int countInRow = getCountCeilsInRowLandscape(context);
+        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            countInRow = getCountCeilsInRowPortrait(context);
+        }
+        ApplicationListManager appManager = new ApplicationListManager(context, countInRow);
+        for(AppInfo appInfo: appManager.getAppsList()) {
+            namePackageFavorites.put(appInfo.getPackageName(), appInfo);
+        }
+
+        for(int i = 0; i < countFavorites; i++) {
+            String packageNameApp = favoritesSettings.getString(String.valueOf(i), "none");
+            if(!packageNameApp.equals("none")) {
+                if(namePackageFavorites.keySet().contains(packageNameApp)) {
+                    favoriteAppsList.add(new Pair(i, namePackageFavorites.get(packageNameApp)));
+                }
+            }
+        }
     }
 
     private class ApplicationViewHolder extends RecyclerView.ViewHolder {
@@ -61,10 +89,15 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                         Intent intent = context.getPackageManager().getLaunchIntentForPackage(
                                 getAppInfoById(position).
                                         getPackageName());
-                        getAppInfoById(position).setCountClicks(
-                                getAppInfoById(position)
-                                        .getCountClicks() + 1
-                        );
+
+                        SharedPreferences appSettings =
+                                context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);
+
+                        SharedPreferences.Editor e = appSettings.edit();
+                        e.putInt(getAppInfoById(position).getPackageName(),
+                                appSettings.getInt(getAppInfoById(position).getPackageName(), 0) + 1);
+                        e.apply();
+
                         context.startActivity(intent);
                     } else if (getContactInfoById(position) != null) {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" +
@@ -221,27 +254,26 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     public void addFavorite(AppInfo appInfo) {
+        SharedPreferences favoritesSettings =
+                context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
+
+        Integer countFavorites = favoritesSettings.getInt(COUNT_FAVORITES, 0);
+
         boolean isExist = false;
-        for(Pair<Integer, AppInfo> favAppInfo: favoriteAppsList) {
-            if(favAppInfo.second.equals(appInfo)) {
+        for(int i = 0; i < countFavorites; i++) {
+            String namePackage = favoritesSettings.getString(String.valueOf(i), "none");
+            if(appInfo.getPackageName().equals(namePackage)) {
                 isExist = true;
                 break;
             }
         }
         if(!isExist) {
-            SharedPreferences favoritesSettings =
-                    context.getSharedPreferences(APP_PREFERENCE_FAVORITES_LIST, Context.MODE_PRIVATE);
-
-            Integer countFavorites = favoritesSettings.getInt(COUNT_FAVORITES, 0);
-
             SharedPreferences.Editor e = favoritesSettings.edit();
             e.putString(String.valueOf(countFavorites), appInfo.getPackageName());
             e.putInt(COUNT_FAVORITES, countFavorites + 1);
             e.apply();
 
             favoriteAppsList.add(new Pair(countFavorites, appInfo));
-
-            notifyItemInserted(favoriteAppsList.size() + contactsList.size() + 2);
         }
     }
 

@@ -35,7 +35,11 @@
                     android:background="@drawable/input_uri"
                     android:padding="10dp"
                     android:textColor="?colorAccent"
-                    android:minHeight="@dimen/height_uri_input">
+                    android:minHeight="@dimen/height_uri_input"
+                    android:inputType="text"
+                    android:hint="@string/enter_uri"
+                    android:imeOptions="actionSearch">
+                    <!--android:imeOptions="actionDone"-->
                 </EditText>
 
 

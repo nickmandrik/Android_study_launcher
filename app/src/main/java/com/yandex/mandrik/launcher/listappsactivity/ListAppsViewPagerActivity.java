@@ -25,8 +25,6 @@ import static com.yandex.mandrik.launcher.util.preference.constants.LauncherCons
 
 public class ListAppsViewPagerActivity extends AppCompatActivity {
 
-    private ApplicationListManager appManager;
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -50,14 +48,14 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         setTheme(SharedPreferencesHelper.getIdResTheme(ListAppsViewPagerActivity.this));
         setContentView(R.layout.activity_recycler);
 
-        if(!isVisitedWelcomeActivity()) {
+        /*if(!isVisitedWelcomeActivity()) {
             this.finish();
             Intent intentWelcome = new Intent(this, WelcomeActivity.class);
             this.startActivity(intentWelcome);
-        }
+        }*/
 
 
-        /**/
+
         pager = (ViewPager) findViewById(R.id.rec_pager);
         String[] headers = new String[2];
         headers[0] = getString(R.string.all_apps);
@@ -65,7 +63,7 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         pagerAdapter = new AppsRecyclerScreenSlidePagerAdapter
                 (getSupportFragmentManager(), 2,
                         SharedPreferencesHelper.isHiddenFavorites(ListAppsViewPagerActivity.this),
-                        headers, appManager);
+                        headers, null);
         pager.setAdapter(pagerAdapter);
 
         UpdateApplicationReceiver receiver = new UpdateApplicationReceiver();

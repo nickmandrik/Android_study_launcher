@@ -5,7 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
-import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.AppsFavoritiesFragment;
+import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.AppsFavoritesFragment;
 import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.AppsRecyclerFragment;
 
 /**
@@ -48,7 +48,7 @@ public class AppsRecyclerScreenSlidePagerAdapter extends FragmentStatePagerAdapt
             case 0:
                 return new AppsRecyclerFragment();
             case 1:
-                return new AppsFavoritiesFragment();
+                return new AppsFavoritesFragment();
             default:
                 return null;
         }

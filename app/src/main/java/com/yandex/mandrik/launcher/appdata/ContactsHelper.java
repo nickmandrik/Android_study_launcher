@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -20,8 +21,9 @@ public class ContactsHelper {
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         // Loop for every contact in the phone
+        int countInArray = 0;
         if (cursor.getCount() > 0) {
-            for (int i = 0; cursor.moveToNext()&& i < count; i++) {
+            for (int i = 0; cursor.moveToNext()&& countInArray < count; i++) {
                 String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 int hasPhoneNumber = Integer.parseInt(cursor.getString(
@@ -38,6 +40,7 @@ public class ContactsHelper {
 
                     Uri photoUri = getPhotoUri(context, contactId);
                     contacts.add(new ContactInfo(contactId, name, phoneNumber, photoUri));
+                    countInArray++;
                 }
             }
         }

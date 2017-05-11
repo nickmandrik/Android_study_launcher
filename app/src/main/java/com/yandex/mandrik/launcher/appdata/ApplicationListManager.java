@@ -103,8 +103,14 @@ public class ApplicationListManager {
 
     public void updatePopularApps(int count) {
         setPopularAppsList(new ArrayList());
+        SharedPreferences appSettings =
+                context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);
+
         List<AppInfo> sortedByClicksApps = new ArrayList();
-        sortedByClicksApps.addAll(appsList);
+        for(AppInfo appInfo: appsList) {
+            appInfo.setCountClicks(appSettings.getInt(appInfo.getPackageName(), 0));
+            sortedByClicksApps.add(appInfo);
+        }
 
         Collections.sort(sortedByClicksApps, new ClicksComparator());
 

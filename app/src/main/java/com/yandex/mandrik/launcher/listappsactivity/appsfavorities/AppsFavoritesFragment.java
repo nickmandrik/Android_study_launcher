@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -14,13 +15,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,6 +35,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yandex.mandrik.launcher.R;
+import com.yandex.mandrik.launcher.appdata.AppInfo;
+import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.appdata.ContactsHelper;
 import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.adapter.FavoritesListAdapter;
 import com.yandex.mandrik.launcher.settingsactivity.SettingsActivity;
@@ -48,11 +54,14 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
+import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
+import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
-public class AppsFavoritiesFragment extends Fragment {
+public class AppsFavoritesFragment extends Fragment {
     private Context context;
 
     private RecyclerView favoritesRecycler;
@@ -79,42 +88,6 @@ public class AppsFavoritiesFragment extends Fragment {
 
         editUri = (EditText) rootView.findViewById(R.id.editUri);
 
-        setSpinner();
-
-        editUri.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                // If the event is a key-down event on the "enter" button
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    // Perform action on key press
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(editUri.getText())));
-
-
-                    if(intent.resolveActivity(context.getPackageManager()) != null) {
-                        // save uri in the file
-                        SharedPreferencesHelper.addUri(context, String.valueOf(editUri.getText()));
-
-                        setSpinner();
-
-                        // start activity
-                        startActivity(intent);
-                    } else {
-                        Toast toast = Toast.makeText(context, getString(R.string.incorrect_uri) + " " + editUri.getText(), Toast.LENGTH_LONG);
-                        TextView view = (TextView) toast.getView().findViewById(android.R.id.message);
-                        view.setBackgroundColor(Color.DKGRAY);
-                        view.setTextColor(Color.WHITE);
-                        toast.show();
-                    }
-
-                    editUri.setText("");
-                    editUri.clearFocus();
-                    hideSoftKeyboard(editUri);
-                    return true;
-                }
-                return false;
-            }
-        });
 
         favoritesRecycler = (RecyclerView) rootView.findViewById(R.id.favoritesRecyclerView);
 
@@ -135,7 +108,40 @@ public class AppsFavoritiesFragment extends Fragment {
         favoritesRecycler.setAdapter(listAdapter);
         setLayoutManagerOnRecycler();
 
+        setSpinner();
+
+        editUri.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(editUri.getText())));
+
+                    if(intent.resolveActivity(context.getPackageManager()) != null) {
+                        // save uri in the file
+                        SharedPreferencesHelper.addUri(context, String.valueOf(editUri.getText()));
+
+                        setSpinner();
+
+                        // start activity
+                        startActivity(intent);
+                    } else {
+                        Toast toast = Toast.makeText(context, getString(R.string.incorrect_uri) + " " + editUri.getText(), Toast.LENGTH_LONG);
+                        TextView view = (TextView) toast.getView().findViewById(android.R.id.message);
+                        view.setBackgroundColor(Color.DKGRAY);
+                        view.setTextColor(Color.WHITE);
+                        toast.show();
+                    }
+
+                    hideSoftKeyboard(editUri);
+                    return true;
+                }
+                return false;
+            }
+        });
+
         updateContacts();
+
 
         return rootView;
     }
@@ -155,12 +161,9 @@ public class AppsFavoritiesFragment extends Fragment {
         if(min > 0) {
             spinner.setVisibility(View.VISIBLE);
 
-            String[] savedUris = SharedPreferencesHelper.getUris(context);
-            String[] visibleUris = new String[min];
+            ArrayList<String> visibleUris = SharedPreferencesHelper.getVisibleUris(context, min);
 
-            for(int i = 0; i < min; i++) {
-                visibleUris[i] = savedUris[i];
-            }
+            visibleUris.add(0, "");
 
             ArrayAdapter<String> adapter = new ArrayAdapter(context, android.R.layout.simple_spinner_item, visibleUris);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -172,12 +175,13 @@ public class AppsFavoritiesFragment extends Fragment {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view,
                                            int position, long id) {
-                    editUri.setText(spinner.getSelectedItem().toString());
+                     editUri.setText(spinner.getSelectedItem().toString());
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> arg0) {
                 }
             });
+
         } else if(spinner != null){
             spinner.setVisibility(View.INVISIBLE);
         }
@@ -189,12 +193,6 @@ public class AppsFavoritiesFragment extends Fragment {
     public void hideSoftKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        setLayoutManagerOnRecycler();
     }
 
     private void setLayoutManagerOnRecycler() {
@@ -219,11 +217,9 @@ public class AppsFavoritiesFragment extends Fragment {
 
     public void updateContacts() {
 
-        if (ContextCompat.checkSelfPermission(context,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle(context.getString(R.string.contacts_access_needed));
@@ -243,7 +239,7 @@ public class AppsFavoritiesFragment extends Fragment {
                 } else {
                     requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);
                 }
-            }
+
         } else {
             int countInRow = getCountCeilsInRowLandscape(context);
             if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -318,11 +314,11 @@ public class AppsFavoritiesFragment extends Fragment {
     }
 
 
-    @Subscribe
+    /*@Subscribe
     public void onSetFavoritesEvent(SetFavoritesEvent event) {
         listAdapter.favoriteAppsList = new ArrayList();
         listAdapter.favoriteAppsList = event.favoritesAppsList;
-    }
+    }*/
 
 
     @Subscribe

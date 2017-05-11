@@ -53,4 +53,5 @@
     <string name="contacts">Контакты</string>
     <string name="contacts_access_needed">Требуется доступ к контактам</string>
     <string name="please_confirm_contacts_access">Для работоспособности лаунчера подтвердите доступ</string>
+    <string name="enter_uri">Введите URI</string>
 </resources>
