@@ -283,7 +283,7 @@ public class AppsFavoritesFragment extends Fragment {
     public void onFavoritesRecyclerChangedEvent(FavoritesRecyclerChangedEvent event) {
         if(event.isInstall) {
             listAdapter.addFavorite(event.appInfo);
-            listAdapter.notifyItemInserted(listAdapter.contactsList.size() + listAdapter.favoriteAppsList.size() + 2);
+            listAdapter.notifyDataSetChanged();
         } else {
             if(listAdapter.favoriteAppsList.contains(event.appInfo)) {
                 int pos = listAdapter.favoriteAppsList.indexOf(event.appInfo);
