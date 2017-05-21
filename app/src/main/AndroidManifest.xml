@@ -20,16 +20,19 @@
     -->
 
 
-    <uses-permission
+    <permission
         android:name="com.yandex.mandrik.launcher.permission"
-        android:label="Allow content provider to work with intent history"
+        android:description="@string/permission_description"
+        android:label="Work with history uri's provider"
         android:protectionLevel="dangerous" />
-    <uses-permission
+    <permission
         android:name="com.yandex.mandrik.launcher.permission.WRITE"
-        android:label="Allow writing into intent history"
+        android:description="@string/permission_description_write"
+        android:label="Writing in history uri's provider"
         android:protectionLevel="dangerous" />
-    <uses-permission
+    <permission
         android:name="com.yandex.mandrik.launcher.permission.READ_ALL"
+        android:description="@string/permission_description_read_all"
         android:label="Allow to read all elements of intent history"
         android:protectionLevel="dangerous" />
 
@@ -68,9 +71,10 @@
 
 
         <provider
-            android:name=".contentprovider.UriHistoryContentProvider"
+            android:name=".providers.UriHistoryContentProvider"
             android:authorities="com.yandex.mandrik.launcher"
             android:exported="true"
+            android:protectionLevel="signature"
             android:permission="@string/permission"
             android:writePermission="@string/write_permission"/>
 

@@ -4,6 +4,10 @@
     <string name="write_permission">com.yandex.mandrik.launcher.permission.WRITE</string>
     <string name="app_package">com.yandex.mandrik.launcher</string>
 
+    <string name="permission_description">Allow content provider to work with intent history</string>
+    <string name="permission_description_read_all">Allow to read all elements of intent history</string>
+    <string name="permission_description_write">Allow writing into intent history</string>
+
     <string name="app_name">Manauncher</string>
     <string name="yandex_launcher">Yandex launcher</string>
     <string name="released_by">Released by Nick Mandrik</string>

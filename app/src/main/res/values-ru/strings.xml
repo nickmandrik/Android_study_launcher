@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="permission_description">Доступ к истории URI</string>
+    <string name="permission_description_read_all">Чтение записей из истории URI</string>
+    <string name="permission_description_write">Запись в историю URI</string>
+
     <string name="app_name">Манаунчер</string>
     <string name="next">Далее</string>
     <string name="yandex_launcher">Яндекс лаунчер</string>

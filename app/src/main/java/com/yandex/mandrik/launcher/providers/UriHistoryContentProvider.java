@@ -1,9 +1,8 @@
-package com.yandex.mandrik.launcher.contentprovider;
+package com.yandex.mandrik.launcher.providers;
 
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -48,7 +47,7 @@ public class UriHistoryContentProvider extends ContentProvider {
         switch (uriMatcher.match(uri)) {
             case 1:
                 String[] listUri = SharedPreferencesHelper.getUris(getContext());
-                result.add(listUri[listUri.length-1]);
+                result.add(listUri[0]);
                 break;
             case 2:
                 if (getContext() != null &&
