@@ -12,14 +12,14 @@ import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.AppsRecyclerFra
  * A simple pager adapter that represents 5 ViewPageRecyclerFragment objects, in
  * sequence.
  */
-public class AppsRecyclerScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+public class HomeScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
     int numPages;
     String[] headers;
     ApplicationListManager applicationListManager;
 
-    public AppsRecyclerScreenSlidePagerAdapter(FragmentManager fm, int numPages, boolean isHiddenFavorites,
-                                               String[] headers, ApplicationListManager appManager) {
+    public HomeScreenSlidePagerAdapter(FragmentManager fm, int numPages, boolean isHiddenFavorites,
+                                       String[] headers, ApplicationListManager appManager) {
         super(fm);
         this.numPages = numPages;
         if(isHiddenFavorites) {

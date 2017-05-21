@@ -2,13 +2,11 @@ package com.yandex.mandrik.launcher.listappsactivity.appsrecycler;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.Pair;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -19,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.appdata.AppInfo;
+import com.yandex.mandrik.launcher.listappsactivity.HomeActivity;
 import com.yandex.mandrik.launcher.util.clicker.CustomRecyclerTouchListener;
 import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.listappsactivity.appsrecycler.adapter.ApplicationListAdapter;
@@ -26,21 +25,16 @@ import com.yandex.mandrik.launcher.util.clicker.RecyclerViewItemClickListener;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
 import com.yandex.mandrik.launcher.util.eventbus.FavoritesRecyclerChangedEvent;
-import com.yandex.mandrik.launcher.util.eventbus.SetFavoritesEvent;
 import com.yandex.mandrik.launcher.util.layout.RecyclerSpanSizeLookup;
 import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
 /**
  * Created by Home on 27.04.2017.

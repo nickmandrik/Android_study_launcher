@@ -19,9 +19,9 @@ import java.io.File;
  * Created by Home on 27.04.2017.
  */
 
-public class UpdateApplicationReceiver extends BroadcastReceiver {
+public class UpdateApplicationsReceiver extends BroadcastReceiver {
 
-    public UpdateApplicationReceiver() {
+    public UpdateApplicationsReceiver() {
 
     }
 

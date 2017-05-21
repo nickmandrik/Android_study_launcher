@@ -5,6 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Shader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,7 +62,8 @@ public class ApplicationListManager {
         setAppsList(getInstalledApps());
 
         setHeaders(new String[3]);
-        getHeaders()[2] = context.getResources().getString(R.string.all_apps);;
+        getHeaders()[2] = context.getResources().getString(R.string.all_apps);
+
         getHeaders()[1] = context.getResources().getString(R.string.new_apps);
         getHeaders()[0] = context.getResources().getString(R.string.popular_apps);
 
@@ -68,34 +74,39 @@ public class ApplicationListManager {
 
     /**
      * Used to get information about all executing apps on device that launcher can start.
+     *
      * @return List<AppInfo> apps that executing on Android device. Information about applications saved in
      * AppInfo
      */
-    private List<AppInfo> getInstalledApps()
-    {
+    private List<AppInfo> getInstalledApps() {
         ArrayList<AppInfo> apps = new ArrayList();
 
         Intent i = new Intent(Intent.ACTION_MAIN, null);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> availableActivities = packageManager.queryIntentActivities(i, 0);
-        for(ResolveInfo ri:availableActivities){
+        for (ResolveInfo ri : availableActivities) {
             AppInfo app = new AppInfo();
             app.setLabel(ri.loadLabel(packageManager).toString());
             app.setPackageName(ri.activityInfo.packageName);
+
+
             app.setIcon(ri.activityInfo.loadIcon(packageManager));
+
             String appFile = ri.activityInfo.applicationInfo.sourceDir;
             app.setLastModified(new File(appFile).lastModified());
 
 
-            SharedPreferences appSettings =
-                    context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);
+            if (!app.getPackageName().contains(context.getResources().getString(R.string.app_package))) {
+                SharedPreferences appSettings =
+                        context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);
 
-            Integer countClicks = appSettings.getInt(app.getPackageName(), 0);
-            app.setCountClicks(countClicks);
+                Integer countClicks = appSettings.getInt(app.getPackageName(), 0);
+                app.setCountClicks(countClicks);
 
 
-            apps.add(app);
+                apps.add(app);
+            }
         }
 
         return apps;
@@ -107,14 +118,14 @@ public class ApplicationListManager {
                 context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);
 
         List<AppInfo> sortedByClicksApps = new ArrayList();
-        for(AppInfo appInfo: appsList) {
+        for (AppInfo appInfo : appsList) {
             appInfo.setCountClicks(appSettings.getInt(appInfo.getPackageName(), 0));
             sortedByClicksApps.add(appInfo);
         }
 
         Collections.sort(sortedByClicksApps, new ClicksComparator());
 
-        for(int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             getPopularAppsList().add(sortedByClicksApps.get(i));
         }
     }
@@ -126,19 +137,17 @@ public class ApplicationListManager {
 
         Collections.sort(sortedByTimeApps, new TimeAppComparator());
 
-        for(int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             getNewAppsList().add(sortedByTimeApps.get(i));
         }
     }
 
-    static class TimeAppComparator implements Comparator<AppInfo>
-    {
-        public int compare(AppInfo a1, AppInfo a2)
-        {
-            long def = -(a1.getLastModified()-a2.getLastModified());
-            if(def < 0) {
+    static class TimeAppComparator implements Comparator<AppInfo> {
+        public int compare(AppInfo a1, AppInfo a2) {
+            long def = -(a1.getLastModified() - a2.getLastModified());
+            if (def < 0) {
                 return -1;
-            } else if(def == 0){
+            } else if (def == 0) {
                 return 0;
             } else {
                 return 1;
@@ -146,14 +155,12 @@ public class ApplicationListManager {
         }
     }
 
-    static class ClicksComparator implements Comparator<AppInfo>
-    {
-        public int compare(AppInfo a1, AppInfo a2)
-        {
-            long def = -(a1.getCountClicks()-a2.getCountClicks());
-            if(def < 0) {
+    static class ClicksComparator implements Comparator<AppInfo> {
+        public int compare(AppInfo a1, AppInfo a2) {
+            long def = -(a1.getCountClicks() - a2.getCountClicks());
+            if (def < 0) {
                 return -1;
-            } else if(def == 0){
+            } else if (def == 0) {
                 return 0;
             } else {
                 return 1;
@@ -162,7 +169,7 @@ public class ApplicationListManager {
     }
 
     public void incrementClicksInAppsList(int postionOfItem) {
-        appsList.get(postionOfItem).setCountClicks(appsList.get(postionOfItem).getCountClicks()+1);
+        appsList.get(postionOfItem).setCountClicks(appsList.get(postionOfItem).getCountClicks() + 1);
 
         SharedPreferences appSettings =
                 context.getSharedPreferences("count_clicks_settings", Context.MODE_PRIVATE);

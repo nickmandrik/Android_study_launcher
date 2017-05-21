@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yandex.mandrik.launcher">
 
-    <uses-sdk android:minSdkVersion="16" />
     <uses-permission
         android:name="android.permission.READ_CONTACTS" />
 
@@ -47,7 +46,7 @@
         </activity>
         <activity
             android:launchMode="singleTask"
-            android:name="com.yandex.mandrik.launcher.listappsactivity.ListAppsViewPagerActivity">
+            android:name="com.yandex.mandrik.launcher.listappsactivity.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -57,7 +56,7 @@
         </activity>
 
 
-        <receiver android:name ="com.yandex.mandrik.launcher.util.receiver.UpdateApplicationReceiver"
+        <receiver android:name ="com.yandex.mandrik.launcher.util.receiver.UpdateApplicationsReceiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REMOVED"/>
@@ -69,7 +68,7 @@
 
 
         <provider
-            android:name=".contentprovider.UriContentProvider"
+            android:name=".contentprovider.UriHistoryContentProvider"
             android:authorities="com.yandex.mandrik.launcher"
             android:exported="true"
             android:permission="@string/permission"

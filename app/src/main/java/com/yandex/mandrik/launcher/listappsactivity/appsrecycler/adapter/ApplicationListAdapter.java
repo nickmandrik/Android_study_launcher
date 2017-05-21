@@ -57,13 +57,13 @@ public class ApplicationListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public class HeaderWithSettingButtonViewHolder extends RecyclerView.ViewHolder {
         protected View line;
         protected TextView text;
-        protected ImageButton imageButton;
+        protected ImageView imageButton;
 
         public HeaderWithSettingButtonViewHolder(View itemView) {
             super(itemView);
             line = itemView.findViewById(R.id.line_view);
             text = (TextView) itemView.findViewById(R.id.section);
-            imageButton = (ImageButton) itemView.findViewById(R.id.but_open_settings);
+            imageButton = (ImageView) itemView.findViewById(R.id.but_open_settings);
         }
     }
 

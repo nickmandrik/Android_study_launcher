@@ -4,21 +4,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 
 import com.yandex.mandrik.launcher.R;
+import com.yandex.mandrik.launcher.appdata.ContactInfo;
+import com.yandex.mandrik.launcher.appdata.ContactsHelper;
 
 import java.util.ArrayList;
 
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_MEMORABLE_URI;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_RECYCLER_APPS_SETTINGS;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_ELEMENTS_IN_ROW_LANDSCAPE;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_ELEMENTS_IN_ROW_PORTRAIT;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_MEMORABLE_URI;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_URI_IN_SETTING;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.IS_HIDDEN_FAVORITES;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.THEME_OF_APPLICATION;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.URI_NUMBER;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.URI_TIME_EXECUTION;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_CONTACTS_LIST;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_MEMORABLE_URI;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_RECYCLER_APPS_SETTINGS;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_CONTACTS;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_ELEMENTS_IN_ROW_LANDSCAPE;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_ELEMENTS_IN_ROW_PORTRAIT;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_MEMORABLE_URI;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_URI_IN_SETTING;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.IS_HIDDEN_FAVORITES;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.THEME_OF_APPLICATION;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.URI_NUMBER;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.URI_TIME_EXECUTION;
 
 /**
  * Class helper to work with shared preferences
@@ -375,5 +380,64 @@ public class SharedPreferencesHelper {
         boolean isHiddenFavorites = appSettings.getBoolean(IS_HIDDEN_FAVORITES, false);
 
         return isHiddenFavorites;
+    }
+
+
+
+
+    /**
+     * get contacts saved in file
+     * @param context to use SharedPreferences
+     * @return ArrayList of ContactInfo that contain info about contacts in shared preference
+     */
+    public static ArrayList<ContactInfo> getContacts(Context context) {
+        SharedPreferences appSettings = context.getSharedPreferences
+                (APP_PREFERENCE_CONTACTS_LIST, Context.MODE_PRIVATE);
+
+        int countContacts = appSettings.getInt(COUNT_CONTACTS, 0);
+        ArrayList<String> idContacts = new ArrayList();
+
+        for(int i = 0; i < countContacts; i++) {
+            idContacts.add(appSettings.getString(String.valueOf(i), "error"));
+        }
+
+        return ContactsHelper.fetchContactsByIds(context, idContacts);
+    }
+
+
+    /**
+     * save id of contacts in file
+     * @param context to use SharedPreferences
+     */
+    public static void saveContacts(Context context, ArrayList<ContactInfo> listContactInfo) {
+        SharedPreferences appSettings = context.getSharedPreferences
+                (APP_PREFERENCE_CONTACTS_LIST, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor e = appSettings.edit();
+        e.putInt(COUNT_CONTACTS, listContactInfo.size());
+        for(int i = 0; i < listContactInfo.size(); i++) {
+            e.putString(String.valueOf(i), listContactInfo.get(i).id);
+        }
+        e.apply();
+    }
+
+
+    /**
+     * save id of contacts in file
+     * @param context to use SharedPreferences
+     * @return true if exist another false
+     */
+    public static boolean isExistContactList(Context context) {
+        SharedPreferences appSettings = context.getSharedPreferences
+                (APP_PREFERENCE_CONTACTS_LIST, Context.MODE_PRIVATE);
+
+        int countContacts = appSettings.getInt(COUNT_CONTACTS, 0);
+
+        switch (countContacts) {
+            case 0:
+                return false;
+            default:
+                return true;
+        }
     }
 }

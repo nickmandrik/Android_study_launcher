@@ -4,7 +4,7 @@ package com.yandex.mandrik.launcher.util.preference.constants;
  * Created by Home on 18.04.2017.
  */
 
-public class LauncherConstants {
+public class SharedPreferenceConstants {
     public static final String APP_PREFERENCE_WELCOME_SETTINGS = "welcome_settings";
     public static final String IS_VISITED_WELCOME_ACTIVITY = "is_visited_welcome";
 
@@ -26,4 +26,8 @@ public class LauncherConstants {
 
     public static final String APP_PREFERENCE_FAVORITES_LIST = "favorites_list_settings";
     public static final String COUNT_FAVORITES = "count_favorites";
+
+
+    public static final String APP_PREFERENCE_CONTACTS_LIST = "contacts_list_settings";
+    public static final String COUNT_CONTACTS = "count_contacts";
 }

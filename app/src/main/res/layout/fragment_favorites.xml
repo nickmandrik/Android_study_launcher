@@ -69,20 +69,23 @@
 
         </LinearLayout>
 
-        <TableRow
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="right"
-            android:layout_marginRight="10dp">
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp">
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/setting"
+            <ImageView
+                android:layout_width="@dimen/height_uri_input"
+                android:layout_height="@dimen/height_uri_input"
+                android:src="@drawable/settings"
                 android:id="@+id/settings_but"
-                android:background="?android:background"
-                android:layout_marginTop="10dp" />
-        </TableRow>
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

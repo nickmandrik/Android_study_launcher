@@ -1,29 +1,26 @@
 package com.yandex.mandrik.launcher.listappsactivity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
-import com.yandex.mandrik.launcher.listappsactivity.pageadapter.AppsRecyclerScreenSlidePagerAdapter;
+import com.yandex.mandrik.launcher.listappsactivity.pageadapter.HomeScreenSlidePagerAdapter;
 
 import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeThemeEvent;
 import com.yandex.mandrik.launcher.util.eventbus.HideFavoritesEvent;
 import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
-import com.yandex.mandrik.launcher.util.receiver.UpdateApplicationReceiver;
-import com.yandex.mandrik.launcher.welcomeactivity.WelcomeActivity;
+import com.yandex.mandrik.launcher.util.receiver.UpdateApplicationsReceiver;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.*;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.*;
 
-public class ListAppsViewPagerActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
@@ -31,7 +28,7 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         EventBus.getDefault().post(new ChangeCountCeilsEvent());
     }
 
-    AppsRecyclerScreenSlidePagerAdapter pagerAdapter;
+    HomeScreenSlidePagerAdapter pagerAdapter;
     ViewPager pager;
 
     @Override
@@ -40,13 +37,8 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
 
         EventBus.getDefault().register(this);
 
-
-
-
-
-
-        setTheme(SharedPreferencesHelper.getIdResTheme(ListAppsViewPagerActivity.this));
-        setContentView(R.layout.activity_recycler);
+        setTheme(SharedPreferencesHelper.getIdResTheme(HomeActivity.this));
+        setContentView(R.layout.activity_home);
 
         /*if(!isVisitedWelcomeActivity()) {
             this.finish();
@@ -60,13 +52,13 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
         String[] headers = new String[2];
         headers[0] = getString(R.string.all_apps);
         headers[1] = getString(R.string.favorite_apps);
-        pagerAdapter = new AppsRecyclerScreenSlidePagerAdapter
+        pagerAdapter = new HomeScreenSlidePagerAdapter
                 (getSupportFragmentManager(), 2,
-                        SharedPreferencesHelper.isHiddenFavorites(ListAppsViewPagerActivity.this),
+                        SharedPreferencesHelper.isHiddenFavorites(HomeActivity.this),
                         headers, null);
         pager.setAdapter(pagerAdapter);
 
-        UpdateApplicationReceiver receiver = new UpdateApplicationReceiver();
+        UpdateApplicationsReceiver receiver = new UpdateApplicationsReceiver();
     }
 
     private boolean isVisitedWelcomeActivity() {
@@ -79,7 +71,7 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
     @Subscribe
     public void onHideFavoritesEvent(HideFavoritesEvent event) {
 
-        boolean isHiddenFavorites = SharedPreferencesHelper.isHiddenFavorites(ListAppsViewPagerActivity.this);
+        boolean isHiddenFavorites = SharedPreferencesHelper.isHiddenFavorites(HomeActivity.this);
 
         if(isHiddenFavorites && pager.getCurrentItem() == 1) {
             pager.setCurrentItem(0);
@@ -92,7 +84,7 @@ public class ListAppsViewPagerActivity extends AppCompatActivity {
 
     @Subscribe
     public void onChangeThemeEvent(ChangeThemeEvent event) {
-        setTheme(SharedPreferencesHelper.getIdResTheme(ListAppsViewPagerActivity.this));
+        setTheme(SharedPreferencesHelper.getIdResTheme(HomeActivity.this));
         recreate();
     }
 }

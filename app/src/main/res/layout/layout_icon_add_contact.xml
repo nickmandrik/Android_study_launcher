@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="65dp"
+        android:layout_height="@dimen/height_image_recycler_4x6"
+        android:id="@+id/image_add_contact"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/marge_top_image_recycler_4x6"
+        android:src="@drawable/add_contact"
+        android:background="@android:color/transparent"
+        android:paddingTop="5dp"
+        android:layout_marginLeft="10dp" />
+</LinearLayout>

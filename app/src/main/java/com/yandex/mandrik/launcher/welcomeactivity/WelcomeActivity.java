@@ -12,18 +12,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 
-import com.yandex.mandrik.launcher.listappsactivity.ListAppsViewPagerActivity;
+import com.yandex.mandrik.launcher.listappsactivity.HomeActivity;
 import com.yandex.mandrik.launcher.welcomeactivity.viewpager.NonSwipeableViewPager;
 
 import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.welcomeactivity.pageadapter.WelcomeScreenSlidePagerAdapter;
 
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_RECYCLER_APPS_SETTINGS;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_WELCOME_SETTINGS;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_ELEMENTS_IN_ROW_LANDSCAPE;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_ELEMENTS_IN_ROW_PORTRAIT;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.IS_VISITED_WELCOME_ACTIVITY;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.THEME_OF_APPLICATION;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_RECYCLER_APPS_SETTINGS;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_WELCOME_SETTINGS;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_ELEMENTS_IN_ROW_LANDSCAPE;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_ELEMENTS_IN_ROW_PORTRAIT;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.IS_VISITED_WELCOME_ACTIVITY;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.THEME_OF_APPLICATION;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -91,7 +91,7 @@ public class WelcomeActivity extends AppCompatActivity {
             setVisitedWelcomeSettings();
             this.finish();
             changeSizeTableAndTheme(isSize4x6, isLightTheme);
-            Intent intentMainApps = new Intent(this, ListAppsViewPagerActivity.class);
+            Intent intentMainApps = new Intent(this, HomeActivity.class);
             this.startActivity(intentMainApps);
         }
     }

@@ -19,7 +19,7 @@ import java.util.List;
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 import static android.support.v4.content.PermissionChecker.checkCallingPermission;
 
-public class UriContentProvider extends ContentProvider {
+public class UriHistoryContentProvider extends ContentProvider {
 
     private final UriMatcher uriMatcher;
 
@@ -27,7 +27,7 @@ public class UriContentProvider extends ContentProvider {
         final String FIELD_VALUE = "value";
     }
 
-    public UriContentProvider() {
+    public UriHistoryContentProvider() {
         uriMatcher = new UriMatcher(0);
         uriMatcher.addURI("com.yandex.mandrik.launcher", "uri/last", 1);
         uriMatcher.addURI("com.yandex.mandrik.launcher", "uri/all", 2);
@@ -89,8 +89,13 @@ public class UriContentProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         if(uriMatcher.match(uri) == 4) {
-            String name = values.getAsString("value");
-            SharedPreferencesHelper.addUri(getContext(), name);
+            if(getContext() != null &&
+                    checkCallingPermission(getContext(),
+                            "com.yandex.mandrik.launcher.permission.WRITE",
+                            null) == PERMISSION_GRANTED) {
+                String name = values.getAsString("value");
+                SharedPreferencesHelper.addUri(getContext(), name);
+            }
         }
         return null;
     }

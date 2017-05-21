@@ -6,16 +6,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,23 +29,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yandex.mandrik.launcher.R;
-import com.yandex.mandrik.launcher.appdata.AppInfo;
-import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
+import com.yandex.mandrik.launcher.appdata.ContactInfo;
 import com.yandex.mandrik.launcher.appdata.ContactsHelper;
 import com.yandex.mandrik.launcher.listappsactivity.appsfavorities.adapter.FavoritesListAdapter;
 import com.yandex.mandrik.launcher.settingsactivity.SettingsActivity;
+import com.yandex.mandrik.launcher.util.eventbus.AddContactEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountCeilsEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangeCountMemUriEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ChangePackageEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ClearFavoritesEvent;
 import com.yandex.mandrik.launcher.util.eventbus.ClearHistoryUriEvent;
 import com.yandex.mandrik.launcher.util.eventbus.FavoritesRecyclerChangedEvent;
-import com.yandex.mandrik.launcher.util.eventbus.SetFavoritesEvent;
 import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
 import com.yandex.mandrik.launcher.util.layout.RecyclerSpanSizeLookup;
 
@@ -54,29 +53,26 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
+import static android.app.Activity.RESULT_OK;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
 
 public class AppsFavoritesFragment extends Fragment {
+
+    private static final int RESULT_PICK_CONTACT = 8500;
+
     private Context context;
 
     private RecyclerView favoritesRecycler;
     private FavoritesListAdapter listAdapter;
-
-    private EditText editUri;
-
-    private EventBus bus = EventBus.getDefault();
 
     private View rootView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        bus.register(this);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -86,8 +82,7 @@ public class AppsFavoritesFragment extends Fragment {
 
         context = rootView.getContext();
 
-        editUri = (EditText) rootView.findViewById(R.id.editUri);
-
+        final EditText editUri = (EditText) rootView.findViewById(R.id.editUri);
 
         favoritesRecycler = (RecyclerView) rootView.findViewById(R.id.favoritesRecyclerView);
 
@@ -97,8 +92,8 @@ public class AppsFavoritesFragment extends Fragment {
         favoritesRecycler.setHasFixedSize(true);
 
 
-        ImageButton imageButton = (ImageButton) rootView.findViewById(R.id.settings_but);
-        imageButton.setOnClickListener(new View.OnClickListener() {
+        ImageView setButton = (ImageView) rootView.findViewById(R.id.settings_but);
+        setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startSettings(v);
@@ -108,7 +103,7 @@ public class AppsFavoritesFragment extends Fragment {
         favoritesRecycler.setAdapter(listAdapter);
         setLayoutManagerOnRecycler();
 
-        setSpinner();
+        setOnSpinnerVisibleUris();
 
         editUri.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -121,7 +116,7 @@ public class AppsFavoritesFragment extends Fragment {
                         // save uri in the file
                         SharedPreferencesHelper.addUri(context, String.valueOf(editUri.getText()));
 
-                        setSpinner();
+                        setOnSpinnerVisibleUris();
 
                         // start activity
                         startActivity(intent);
@@ -140,13 +135,13 @@ public class AppsFavoritesFragment extends Fragment {
             }
         });
 
-        updateContacts();
+        listAdapter.updateContacts();
 
 
         return rootView;
     }
 
-    public void setSpinner() {
+    public void setOnSpinnerVisibleUris() {
 
         Integer countShownUri = SharedPreferencesHelper.getCountVisibleUris(context);
         Integer countUri = SharedPreferencesHelper.getCountSavedUris(context);
@@ -175,7 +170,8 @@ public class AppsFavoritesFragment extends Fragment {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view,
                                            int position, long id) {
-                     editUri.setText(spinner.getSelectedItem().toString());
+                    EditText editUri = (EditText) rootView.findViewById(R.id.editUri);
+                    editUri.setText(spinner.getSelectedItem().toString());
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> arg0) {
@@ -186,9 +182,6 @@ public class AppsFavoritesFragment extends Fragment {
             spinner.setVisibility(View.INVISIBLE);
         }
     }
-
-
-
 
     public void hideSoftKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)context.getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -214,8 +207,7 @@ public class AppsFavoritesFragment extends Fragment {
     }
 
 
-
-    public void updateContacts() {
+    public void requestPermissionAddContact() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(context,
                 Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -240,12 +232,6 @@ public class AppsFavoritesFragment extends Fragment {
                     requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);
                 }
 
-        } else {
-            int countInRow = getCountCeilsInRowLandscape(context);
-            if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                countInRow = getCountCeilsInRowPortrait(context);
-            }
-            listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
         }
     }
 
@@ -257,14 +243,10 @@ public class AppsFavoritesFragment extends Fragment {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    int countInRow = getCountCeilsInRowLandscape(context);
-                    if(context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                        countInRow = getCountCeilsInRowPortrait(context);
-                    }
-                    listAdapter.contactsList = ContactsHelper.fetchContacts(context, countInRow);
-                    listAdapter.notifyDataSetChanged();
+                    Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                    startActivityForResult(contactPickerIntent, RESULT_PICK_CONTACT);
                 } else {
-
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
@@ -272,6 +254,30 @@ public class AppsFavoritesFragment extends Fragment {
             }
         }
     }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // check whether the result is ok
+        if (resultCode == RESULT_OK) {
+            // Check for the request code, we might be usign multiple startActivityForReslut
+            switch (requestCode) {
+                case RESULT_PICK_CONTACT:
+                    ContactInfo contactInfo = ContactsHelper.getContactInfoPicked(context, data);
+                    if(!contactInfo.equals(null) && !listAdapter.isContainIdContact(contactInfo.id)) {
+                        //listAdapter.contactsList.remove(listAdapter.contactsList.size()-1);
+                        listAdapter.contactsList.add(contactInfo);
+                        SharedPreferencesHelper.saveContacts(context, listAdapter.contactsList);
+                        listAdapter.notifyDataSetChanged();
+                    }
+                    break;
+            }
+        } else {
+            Log.e("AppsFavoritesFragment", "Failed to pick contact");
+        }
+    }
+
+
 
 
 
@@ -302,7 +308,7 @@ public class AppsFavoritesFragment extends Fragment {
 
     @Subscribe
     public void onClearHistoryUriEvent(ClearHistoryUriEvent event) {
-        setSpinner();
+        setOnSpinnerVisibleUris();
     }
 
 
@@ -310,7 +316,7 @@ public class AppsFavoritesFragment extends Fragment {
     public void onChangeCountMemUriEvent(ChangeCountMemUriEvent event) {
 
         SharedPreferencesHelper.changeCountVisibleUris(context, event.countMemUri);
-        setSpinner();
+        setOnSpinnerVisibleUris();
     }
 
 
@@ -323,11 +329,10 @@ public class AppsFavoritesFragment extends Fragment {
 
     @Subscribe
     public void onChangeCountCeilsEvent(ChangeCountCeilsEvent event) {
-        updateContacts();
+        listAdapter.updateContacts();
         setLayoutManagerOnRecycler();
         listAdapter.notifyDataSetChanged();
     }
-
 
     @Subscribe
     public void onChangePackageEvent(ChangePackageEvent event) {
@@ -338,6 +343,17 @@ public class AppsFavoritesFragment extends Fragment {
                     listAdapter.removeFavorite(i + listAdapter.contactsList.size() + 2);
                 }
             }
+        }
+    }
+
+    @Subscribe
+    public void onAddContactEvent(AddContactEvent event) {
+        requestPermissionAddContact();
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+            startActivityForResult(contactPickerIntent, RESULT_PICK_CONTACT);
         }
     }
 }

@@ -32,12 +32,12 @@
             android:gravity="right"
             android:layout_marginTop="10dp">
 
-            <ImageButton
+            <ImageView
                 android:layout_width="@dimen/height_uri_input"
                 android:layout_height="@dimen/height_uri_input"
-                app:srcCompat="@drawable/setting"
+                app:srcCompat="@drawable/settings"
                 android:id="@+id/but_open_settings"
-                android:background="?android:background"/>
+                android:background="@android:color/transparent"/>
         </TableRow>
     </LinearLayout>
 

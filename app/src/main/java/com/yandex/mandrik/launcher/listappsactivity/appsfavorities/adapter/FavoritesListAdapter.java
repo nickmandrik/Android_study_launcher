@@ -1,16 +1,20 @@
 package com.yandex.mandrik.launcher.listappsactivity.appsfavorities.adapter;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,16 +25,21 @@ import com.yandex.mandrik.launcher.R;
 import com.yandex.mandrik.launcher.appdata.AppInfo;
 import com.yandex.mandrik.launcher.appdata.ApplicationListManager;
 import com.yandex.mandrik.launcher.appdata.ContactInfo;
+import com.yandex.mandrik.launcher.util.eventbus.AddContactEvent;
+import com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.changeStatusOfHideFavorites;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowLandscape;
 import static com.yandex.mandrik.launcher.util.preference.SharedPreferencesHelper.getCountCeilsInRowPortrait;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.APP_PREFERENCE_FAVORITES_LIST;
-import static com.yandex.mandrik.launcher.util.preference.constants.LauncherConstants.COUNT_FAVORITES;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.APP_PREFERENCE_FAVORITES_LIST;
+import static com.yandex.mandrik.launcher.util.preference.constants.SharedPreferenceConstants.COUNT_FAVORITES;
 
 /**
  * Adapter that use the views with appList image and text.
@@ -157,13 +166,26 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+
+    private class AddContactViewHolder extends RecyclerView.ViewHolder {
+        ImageView icon;
+
+        private AddContactViewHolder(View itemView) {
+            super(itemView);
+            icon = (ImageView) itemView.findViewById(R.id.image_add_contact);
+        }
+    }
+
+
     @Override
     public int getItemViewType(int position) {
-        if(position == 0 || position == contactsList.size() + 1) {
+        if(position == 0 || position == contactsList.size() + 2) {
             return 0;
-        } else if(position < contactsList.size() + 1) {
+        } else if(position == 1) {
+            return 3;
+        } else if(position < contactsList.size() + 2) {
             return 1;
-        } else if(position < contactsList.size() + favoriteAppsList.size() + 2) {
+        } else if(position < contactsList.size() + favoriteAppsList.size() + 3) {
             return 2;
         }
         return -1;
@@ -181,6 +203,10 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 View view = LayoutInflater.from(parent.getContext()).inflate(
                         R.layout.layout_app_view_on_recycler, parent, false);
                 return new ApplicationViewHolder(view);
+            case 3:
+                View add_contact = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.layout_icon_add_contact, parent, false);
+                return new AddContactViewHolder(add_contact);
         }
         return null;
     }
@@ -192,7 +218,7 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
                 if(position == 0) {
                     headerViewHolder.text.setText(headers[0]);
-                } else if(position == contactsList.size() + 1) {
+                } else if(position == contactsList.size() + 2) {
                     headerViewHolder.text.setText(headers[1]);
                 }
                 break;
@@ -219,13 +245,22 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 viewHolder.image.setImageDrawable(getAppInfoById(position).getIcon());
                 viewHolder.text.setText(getAppInfoById(position).getLabel());
                 break;
+            case 3:
+                AddContactViewHolder contactHolder = (AddContactViewHolder) holder;
+                contactHolder.icon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EventBus.getDefault().post(new AddContactEvent());
+                    }
+                });
+                break;
         }
     }
 
 
     @Override
     public int getItemCount() {
-        return contactsList.size() + favoriteAppsList.size() + 2;
+        return contactsList.size() + favoriteAppsList.size() + 3;
     }
 
     /**
@@ -245,7 +280,7 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 e.putString(String.valueOf(favoriteAppsList.get(position- contactsList.size()-2).first), "none");
                 e.apply();
 
-                favoriteAppsList.remove(position-contactsList.size()-2);
+                favoriteAppsList.remove(position-contactsList.size()-3);
                 notifyItemRemoved(position);
                 break;
             default:
@@ -267,6 +302,7 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
                 break;
             }
         }
+        Log.d("ok", String.valueOf(isExist));
         if(!isExist) {
             SharedPreferences.Editor e = favoritesSettings.edit();
             e.putString(String.valueOf(countFavorites), appInfo.getPackageName());
@@ -302,9 +338,10 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
         switch(id) {
             case 0:
             case 1:
+            case 3:
                 return null;
             case 2:
-                return favoriteAppsList.get(position - contactsList.size() - 2).second;
+                return favoriteAppsList.get(position - contactsList.size() - 3).second;
             default:
                 return null;
         }
@@ -315,9 +352,10 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
         switch(id) {
             case 0:
             case 2:
+            case 3:
                 return null;
             case 1:
-                return contactsList.get(position - 1);
+                return contactsList.get(position - 2);
             default:
                 return null;
         }
@@ -325,6 +363,27 @@ public class FavoritesListAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     public void setHeaders(String[] headers) {
         this.headers = headers;
+    }
+
+
+    public void updateContacts() {
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            if(SharedPreferencesHelper.isExistContactList(context)) {
+                contactsList = SharedPreferencesHelper.getContacts(context);
+            }
+            notifyDataSetChanged();
+        }
+    }
+
+
+    public boolean isContainIdContact(String id) {
+        for(ContactInfo contactInfo: contactsList) {
+            if(contactInfo.id.equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
